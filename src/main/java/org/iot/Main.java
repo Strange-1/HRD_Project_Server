@@ -7,7 +7,7 @@ public class Main {
         System.out.println("Hello world from server");
         try {
             Connection conn = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3307",
+                    "jdbc:mysql://localhost:3306",
                     "iot",
                     "hrd"
             );
