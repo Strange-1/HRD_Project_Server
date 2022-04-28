@@ -1,27 +1,40 @@
 package org.iot;
 
-import java.sql.*;
+import org.mariadb.jdbc.Connection;
+
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 public class Main {
     public static void main(String[] args) {
         System.out.println("Hello world from server");
+        Connection con = null;
+
+        String server = "127.0.0.7:3306";  // 본인의 wsl 서버 ip를 삽입
+        String database = "iot";
+        String user_name = "iot";
+        String password = "hrd";
+
         try {
-            Connection conn = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306",
-                    "iot",
-                    "hrd"
-            );
-
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(
-                    "show databases"
-            );
-
-            while (rs.next()) {
-                System.out.println(rs.getString(1));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            Class.forName("org.mariadb.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            System.err.println(" Driver loading error : " + e.getMessage());
+            e.printStackTrace();
         }
+
+        try {
+            con = (Connection) DriverManager.getConnection("jdbc:mysql://" +
+                    server + "/" +
+                    database +
+                    "?useSSL=false", user_name, password); // SSL 실행 확인
+            System.out.println("Connection Success!");
+        } catch(SQLException e) {
+            System.err.println("Error :" + e.getMessage());
+            e.printStackTrace();
+        }
+        try {
+            if(con != null)
+                con.close();
+        } catch (SQLException e) {}
     }
 }
