@@ -1,5 +1,6 @@
 package org.iot;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
@@ -10,7 +11,7 @@ public class Main {
         String database = "iot";
         String user_name = "iot";
         String password = "hrd";
-        var con = DriverManager.getConnection(server, user_name, password);
+        Connection con = DriverManager.getConnection(server, user_name, password);
         if (con != null) {
             System.out.println("JDBC connection: OK");
             con.close();
