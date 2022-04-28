@@ -6,7 +6,7 @@ import java.sql.SQLException;
 public class Main {
     public static void main(String[] args) throws SQLException {
         System.out.println("Hello world from server");
-        String server = "jdbc:mariadb://127.0.0.7/iot";
+        String server = "jdbc:mariadb://127.0.0.7:3306/iot";
         String database = "iot";
         String user_name = "iot";
         String password = "hrd";
