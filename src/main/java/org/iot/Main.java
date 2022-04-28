@@ -6,7 +6,7 @@ import java.sql.SQLException;
 public class Main {
     public static void main(String[] args) throws SQLException {
         System.out.println("Hello world from server");
-        String server = "127.0.0.1:3306";  // 본인의 wsl 서버 ip를 삽입
+        String server = "jdbc:mariadb://127.0.0.7/iot";
         String database = "iot";
         String user_name = "iot";
         String password = "hrd";
