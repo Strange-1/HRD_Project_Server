@@ -2,16 +2,17 @@ package org.iot;
 
 
 import org.sqlite.SQLiteConfig;
+import org.sqlite.SQLiteOpenMode;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class Main {
-    private Connection connection;
-    private boolean isOpened;
-    String dbFileName = "iot";
-    String database = "iot";
+    private static Connection connection;
+    private static boolean isOpened;
+    private static final String dbFileName = "iot";
+    String database = "iot.db";
     String tableName = "testTable";
 
     public static void main(String[] args) {
@@ -19,30 +20,34 @@ public class Main {
 
         try {
             Class.forName("org.sqlite.JDBC");
+            if ((connection = open()) != null) {
+                isOpened = true;
+                System.out.println("JDBC Connection: OK");
+            }
+            if (close())
+                System.out.println("JDBC Closure: OK");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public boolean open() {
-        try { // 읽기 전용
+    public static Connection open() {
+        try {
             SQLiteConfig config = new SQLiteConfig();
-            config.setReadOnly(true);
-            this.connection = DriverManager.getConnection("jdbc:sqlite:/" + this.dbFileName, config.toProperties());
+            config.setOpenMode(SQLiteOpenMode.READWRITE);
+            return DriverManager.getConnection("jdbc:sqlite:" + dbFileName, config.toProperties());
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
+            return null;
         }
-        isOpened = true;
-        return true;
     }
 
-    public boolean close() {
-        if (!this.isOpened) {
+    public static boolean close() {
+        if (!isOpened) {
             return true;
         }
         try {
-            this.connection.close();
+            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
