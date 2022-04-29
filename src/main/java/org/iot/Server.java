@@ -25,7 +25,7 @@ public class Server {
         );
         try {
             serverSocket = new ServerSocket();
-            serverSocket.bind(new InetSocketAddress("localhost", 7030));
+            serverSocket.bind(new InetSocketAddress(7030));
         } catch (Exception e) {
             if (!serverSocket.isClosed()) stopServer();
             return;
