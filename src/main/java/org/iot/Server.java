@@ -91,6 +91,7 @@ public class Server {
                         String data = new String(byteArr, 0, readByteCount, StandardCharsets.UTF_8);
                         for (Client client :
                                 connections) {
+                            Debug.println(Server.class, client.socket.toString());
                             client.send(data);
                         }
                     }
