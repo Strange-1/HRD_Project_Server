@@ -14,12 +14,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Server {
-    static ExecutorService executorService;
-    static ServerSocket serverSocket;
-    static List<Client> connections = new Vector<>();
-    static boolean isServerOn = false;
+    ExecutorService executorService;
+    ServerSocket serverSocket;
+    List<Client> connections = new Vector<>();
+    public static boolean isServerOn = false;
 
-    public static void startServer() {
+    public void startServer() {
         executorService = Executors.newFixedThreadPool(
                 Runtime.getRuntime().availableProcessors()
         );
@@ -50,7 +50,7 @@ public class Server {
         executorService.submit(runnable);
     }
 
-    static void stopServer() {
+    void stopServer() {
         try {
             Iterator<Client> iterator = connections.iterator();
             while (iterator.hasNext()) {
@@ -70,7 +70,7 @@ public class Server {
         }
     }
 
-    static class Client {
+    class Client {
         Socket socket;
 
         Client(Socket socket) {

@@ -12,6 +12,7 @@ public class Main {
     private static Connection connection;
     private static boolean isOpened;
     private static final String dbFileName = "iot";
+    static Server server;
     String database = "iot.db";
     String tableName = "testTable";
 
@@ -25,8 +26,8 @@ public class Main {
                 isOpened = true;
                 Debug.println(Main.class, "SQLite Connection: OK");
             }
-            Server.startServer();
-
+            server = new Server();
+            server.startServer();
 
         } catch (Exception e) {
             e.printStackTrace();
