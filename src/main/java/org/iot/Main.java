@@ -16,22 +16,28 @@ public class Main {
     String tableName = "testTable";
 
     public static void main(String[] args) {
-        System.out.println("Hello world from server");
+        System.out.println("== Iot@HRD Project: Parking lot ==");
+        Debug.println(Main.class, "Initializing...");
 
         try {
             Class.forName("org.sqlite.JDBC");
-            if ((connection = open()) != null) {
+            if ((connection = openDB()) != null) {
                 isOpened = true;
-                System.out.println("JDBC Connection: OK");
+                Debug.println(Main.class, "SQLite Connection: OK");
             }
-            if (close())
-                System.out.println("JDBC Closure: OK");
+            Server.startServer();
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+        while (!Server.isServerOn) ;
+        while (Server.isServerOn) ;
+        if (closeDB())
+            Debug.println(Main.class, "SQLite Closure: OK");
     }
 
-    public static Connection open() {
+    public static Connection openDB() {
         try {
             SQLiteConfig config = new SQLiteConfig();
             config.setOpenMode(SQLiteOpenMode.READWRITE);
@@ -42,7 +48,7 @@ public class Main {
         }
     }
 
-    public static boolean close() {
+    public static boolean closeDB() {
         if (!isOpened) {
             return true;
         }
