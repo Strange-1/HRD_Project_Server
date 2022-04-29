@@ -20,9 +20,8 @@ public class Server {
     public static boolean isServerOn = false;
 
     public void startServer() {
-        executorService = Executors.newFixedThreadPool(
-                Runtime.getRuntime().availableProcessors()
-        );
+        //executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        executorService = Executors.newFixedThreadPool(100);
         try {
             serverSocket = new ServerSocket();
             serverSocket.bind(new InetSocketAddress(7030));
@@ -91,7 +90,7 @@ public class Server {
                         String data = new String(byteArr, 0, readByteCount, StandardCharsets.UTF_8);
                         for (Client client :
                                 connections) {
-                            Debug.println(Server.class, client.socket.toString());
+                            Debug.println(Server.class, data + " from " + client.socket.toString());
                             client.send(data);
                         }
                     }
