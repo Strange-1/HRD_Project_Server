@@ -38,7 +38,7 @@ public class Main {
             Debug.println(Main.class, "SQLite Closure: OK");
     }
 
-    public static Connection openDB() {
+    private static Connection openDB() {
         try {
             SQLiteConfig config = new SQLiteConfig();
             config.setOpenMode(SQLiteOpenMode.READWRITE);
@@ -49,7 +49,7 @@ public class Main {
         }
     }
 
-    public static boolean closeDB() {
+    private static boolean closeDB() {
         if (!isOpened) {
             return true;
         }

@@ -88,11 +88,8 @@ public class Server {
                         String message = String.format("[요청 처리: %s: %s]", socket.getRemoteSocketAddress(), Thread.currentThread().getName());
                         Debug.println(Server.class, message);
                         String data = new String(byteArr, 0, readByteCount, StandardCharsets.UTF_8);
-                        for (Client client :
-                                connections) {
-                            Debug.println(Server.class, data + " from " + client.socket.toString());
-                            client.send(data);
-                        }
+                        Debug.println(Server.class, data + " from " + socket.getRemoteSocketAddress().toString());
+                        send(response(data));
                     }
                 } catch (Exception e) {
                     try {
@@ -127,6 +124,11 @@ public class Server {
                 }
             };
             executorService.submit(runnable);
+        }
+
+        String response(String data)
+        {
+            return data;
         }
     }
 }
