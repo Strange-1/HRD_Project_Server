@@ -13,6 +13,7 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,6 +23,7 @@ public class Server {
     ServerSocket serverSocket;
     List<Client> connections = new Vector<>();
     public static boolean isServerOn = false;
+
     //IP: 104.197.76.225
     public void startServer() {
         executorService = Executors.newFixedThreadPool(100);
@@ -130,15 +132,22 @@ public class Server {
         }
 
         String response(String data) {
+            String responseData;
             JSONObject jsonObject;
             try {
                 jsonObject = (JSONObject) new JSONParser().parse(data);
             } catch (ParseException e) {
                 return "{\"result\":\"JSON syntax error\"}";
             }
-            jsonObject.put("result", "OK");
-            data = jsonObject.toJSONString();
-            return data;
+            switch (jsonObject.get("type").toString().toLowerCase(Locale.ROOT)) {
+                case "type":
+                    responseData = String.format("{\"result\": \"OK\", \"data\": \"로그인 시도(미구현): %s %s\"",
+                            jsonObject.get("id").toString(), jsonObject.get("pw").toString());
+                    break;
+                default:
+                    responseData = "{\"result\":\"ERROR\", \"data\":\"unknown type\"}";
+            }
+            return responseData;
         }
     }
 }
