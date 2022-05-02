@@ -208,7 +208,7 @@ public class Server {
                         statement.setString(1, jsonObject.get("id").toString());
                         var queryResult = statement.executeQuery();
                         if (queryResult.next() && queryResult.getString(2).equals(jsonObject.get("pw").toString()))
-                            responseData = String.format("{\"result\": \"OK\", \"data\": \"회원 고유번호: %s\"", queryResult.getString(3));
+                            responseData = String.format("{\"result\": \"OK\", \"userNumber\": \"%s\"}", queryResult.getString(3));
                         else
                             responseData = "{\"result\": \"NG\", \"data\": \"계정정보 없음\"";
                         break;
