@@ -1,5 +1,9 @@
 package org.iot;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -18,9 +22,8 @@ public class Server {
     ServerSocket serverSocket;
     List<Client> connections = new Vector<>();
     public static boolean isServerOn = false;
-
+    //IP: 104.197.76.225
     public void startServer() {
-        //executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         executorService = Executors.newFixedThreadPool(100);
         try {
             serverSocket = new ServerSocket();
@@ -126,8 +129,15 @@ public class Server {
             executorService.submit(runnable);
         }
 
-        String response(String data)
-        {
+        String response(String data) {
+            JSONObject jsonObject;
+            try {
+                jsonObject = (JSONObject) new JSONParser().parse(data);
+            } catch (ParseException e) {
+                return "{\"result\":\"JSON syntax error\"}";
+            }
+            jsonObject.put("result", "OK");
+            data = jsonObject.toJSONString();
             return data;
         }
     }
