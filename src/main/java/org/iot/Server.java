@@ -131,6 +131,7 @@ public class Server {
 
     class Client {
         Socket socket;
+        private String userNumber="";
 
         Client(Socket socket) {
             this.socket = socket;
@@ -207,8 +208,10 @@ public class Server {
                         var statement = sqlConn.prepareStatement("select * from user where id=?;");
                         statement.setString(1, jsonObject.get("id").toString());
                         var queryResult = statement.executeQuery();
-                        if (queryResult.next() && queryResult.getString(2).equals(jsonObject.get("pw").toString()))
-                            responseData = String.format("{\"result\": \"OK\", \"userNumber\": \"%s\"}", queryResult.getString(3));
+                        if (queryResult.next() && queryResult.getString(2).equals(jsonObject.get("pw").toString())) {
+                            userNumber = queryResult.getString(3);
+                            responseData = String.format("{\"result\": \"OK\", \"userNumber\": \"%s\"}", userNumber);
+                        }
                         else
                             responseData = "{\"result\": \"NG\", \"data\": \"계정정보 없음\"";
                         break;
