@@ -3,6 +3,8 @@ package org.iot;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.sqlite.SQLiteConfig;
+import org.sqlite.SQLiteOpenMode;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,6 +13,9 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -22,10 +27,14 @@ public class Server {
     ExecutorService executorService;
     ServerSocket serverSocket;
     List<Client> connections = new Vector<>();
+    Connection sqlConn;
+    boolean isSqlOpen = false;
     public static boolean isServerOn = false;
+    private static final String dbFileName = "iot";
 
     //IP: 104.197.76.225
-    public void startServer() {
+    public void startServer() throws SQLException {
+        connectSQL();
         executorService = Executors.newFixedThreadPool(100);
         try {
             serverSocket = new ServerSocket();
@@ -46,7 +55,13 @@ public class Server {
                     connections.add(client);
                     Debug.println(Server.class, String.format("[연결 갯수: %d]", connections.size()));
                 } catch (Exception e) {
-                    if (!serverSocket.isClosed()) stopServer();
+                    if (!serverSocket.isClosed()) {
+                        try {
+                            stopServer();
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
                     break;
                 }
             }
@@ -54,7 +69,44 @@ public class Server {
         executorService.submit(runnable);
     }
 
-    void stopServer() {
+    private void connectSQL() {
+        try {
+            Class.forName("org.sqlite.JDBC");
+            if ((sqlConn = openDB()) != null) {
+                isSqlOpen = true;
+                Debug.println(Main.class, "SQLite Connection: OK");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Connection openDB() {
+        try {
+            SQLiteConfig config = new SQLiteConfig();
+            config.setOpenMode(SQLiteOpenMode.READWRITE);
+            return DriverManager.getConnection("jdbc:sqlite:" + dbFileName, config.toProperties());
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private boolean closeDB() {
+        if (!isSqlOpen) {
+            return true;
+        }
+        try {
+            sqlConn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    void stopServer() throws SQLException {
         try {
             Iterator<Client> iterator = connections.iterator();
             while (iterator.hasNext()) {
@@ -72,7 +124,10 @@ public class Server {
         } finally {
             isServerOn = false;
         }
+        if (closeDB())
+            sqlConn.close();
     }
+
 
     class Client {
         Socket socket;
@@ -132,20 +187,36 @@ public class Server {
         }
 
         String response(String data) {
-            String responseData;
+            String responseData = "";
             JSONObject jsonObject;
             try {
                 jsonObject = (JSONObject) new JSONParser().parse(data);
             } catch (ParseException e) {
                 return "{\"result\":\"JSON syntax error\"}";
             }
-            switch (jsonObject.get("type").toString().toLowerCase(Locale.ROOT)) {
-                case "type":
-                    responseData = String.format("{\"result\": \"OK\", \"data\": \"로그인 시도(미구현): %s %s\"",
-                            jsonObject.get("id").toString(), jsonObject.get("pw").toString());
-                    break;
-                default:
-                    responseData = "{\"result\":\"ERROR\", \"data\":\"unknown type\"}";
+            try {
+                switch (jsonObject.get("type").toString().toLowerCase(Locale.ROOT)) {
+                    case "echo":
+                        jsonObject.remove("type");
+                        jsonObject.put("result", "OK");
+                        responseData = jsonObject.toJSONString();
+                        break;
+                    case "login":
+                        if (!(jsonObject.containsKey("id") && jsonObject.containsKey("pw")))
+                            return "{\"result\":\"JSON syntax error\"}";
+                        var statement = sqlConn.prepareStatement("select * from user where id=?;");
+                        statement.setString(1, jsonObject.get("id").toString());
+                        var queryResult = statement.executeQuery();
+                        if (queryResult.next() && queryResult.getString(2).equals(jsonObject.get("pw").toString()))
+                            responseData = String.format("{\"result\": \"OK\", \"data\": \"회원 고유번호: %s\"", queryResult.getString(3));
+                        else
+                            responseData = "{\"result\": \"NG\", \"data\": \"계정정보 없음\"";
+                        break;
+                    default:
+                        responseData = "{\"result\":\"ERROR\", \"data\":\"unknown type\"}";
+                }
+            } catch (SQLException e) {
+                return "{\"result\":\"ERROR\", \"data\":\"DB Server error\"}";
             }
             return responseData;
         }
