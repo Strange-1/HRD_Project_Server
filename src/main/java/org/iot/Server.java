@@ -33,7 +33,7 @@ public class Server {
     public static boolean isServerOn = false;
     private static final String dbFileName = "iot";
 
-    //IP: 104.197.76.225
+    //IP: 34.132.25.146
     public void startServer() throws SQLException {
         random.setSeed(Instant.now().toEpochMilli());
         connectSQL();
@@ -151,7 +151,7 @@ public class Server {
                         String message = String.format("[요청 처리: %s: %s]", socket.getRemoteSocketAddress(), Thread.currentThread().getName());
                         Debug.println(Server.class, message);
                         String data = new String(byteArr, 0, readByteCount, StandardCharsets.UTF_8);
-                        Debug.println(Server.class, data + " from " + socket.getRemoteSocketAddress().toString());
+                        Debug.println(Server.class, "[" + (userNumber.isEmpty() ? "" : userNumber+"@") + socket.getInetAddress().toString().substring(1) + "]: " + data);
                         send(response(data));
                     }
                 } catch (Exception e) {
@@ -176,6 +176,7 @@ public class Server {
                     OutputStream outputStream = socket.getOutputStream();
                     outputStream.write(byteArr);
                     outputStream.flush();
+                    Debug.println(Server.class, String.format("[회신 보냄: %s]", data));
                 } catch (Exception e) {
                     try {
                         String message = String.format("[클라이언트 통신 안됨: %s: %s]", socket.getRemoteSocketAddress(), Thread.currentThread().getName());
@@ -230,7 +231,7 @@ public class Server {
                     case "heartbeat":
                         if (jsonObject.containsKey("userNumber") &&
                                 jsonObject.containsKey("sessionNumber") &&
-                                sessions.get(jsonObject.get("userNumber").toString()).equals(jsonObject.get("sessionNumber").toString())) {
+                                sessions.get(jsonObject.get("userNumber").toString()).equals(Long.parseLong(jsonObject.get("sessionNumber").toString()))) {
                             responseData.put("result", "OK");
                             responseData.put("data", "heartbeat");
                         } else {
@@ -249,7 +250,7 @@ public class Server {
                 }
             } catch (SQLException e) {
                 responseData.put("result", "NG");
-                responseData.put("data","DB Server error");
+                responseData.put("data", "DB Server error");
                 return responseData.toJSONString();
             }
             return responseData.toJSONString();
