@@ -16,17 +16,18 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Vector;
+import java.time.Instant;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Stream;
 
 public class Server {
     ExecutorService executorService;
     ServerSocket serverSocket;
     List<Client> connections = new Vector<>();
+    HashMap<String, Long> sessions = new HashMap<>();
+    Random random = new Random();
     Connection sqlConn;
     boolean isSqlOpen = false;
     public static boolean isServerOn = false;
@@ -34,6 +35,7 @@ public class Server {
 
     //IP: 104.197.76.225
     public void startServer() throws SQLException {
+        random.setSeed(Instant.now().toEpochMilli());
         connectSQL();
         executorService = Executors.newFixedThreadPool(100);
         try {
@@ -131,7 +133,7 @@ public class Server {
 
     class Client {
         Socket socket;
-        private String userNumber="";
+        private String userNumber = "";
 
         Client(Socket socket) {
             this.socket = socket;
@@ -188,40 +190,61 @@ public class Server {
         }
 
         String response(String data) {
-            String responseData = "";
+            JSONObject responseData = new JSONObject();
             JSONObject jsonObject;
             try {
                 jsonObject = (JSONObject) new JSONParser().parse(data);
             } catch (ParseException e) {
-                return "{\"result\":\"JSON syntax error\"}";
+                responseData.put("result", "JSON syntax error");
+                return responseData.toJSONString();
             }
             try {
                 switch (jsonObject.get("type").toString().toLowerCase(Locale.ROOT)) {
                     case "echo":
                         jsonObject.remove("type");
                         jsonObject.put("result", "OK");
-                        responseData = jsonObject.toJSONString();
-                        break;
+                        return jsonObject.toJSONString();
                     case "login":
-                        if (!(jsonObject.containsKey("id") && jsonObject.containsKey("pw")))
-                            return "{\"result\":\"JSON syntax error\"}";
+                        if (!(jsonObject.containsKey("id") && jsonObject.containsKey("pw"))) {
+                            responseData.put("result", "NG");
+                            responseData.put("data", "JSON syntax error");
+                            return responseData.toJSONString();
+                        }
                         var statement = sqlConn.prepareStatement("select * from user where id=?;");
                         statement.setString(1, jsonObject.get("id").toString());
                         var queryResult = statement.executeQuery();
                         if (queryResult.next() && queryResult.getString(2).equals(jsonObject.get("pw").toString())) {
                             userNumber = queryResult.getString(3);
-                            responseData = String.format("{\"result\": \"OK\", \"userNumber\": \"%s\"}", userNumber);
+                            responseData.put("result", "OK");
+                            responseData.put("userNumber", userNumber);
+                            sessions.put(userNumber, random.nextLong());
+                        } else {
+                            responseData.put("result", "NG");
+                            responseData.put("data", "계정정보 없음");
                         }
-                        else
-                            responseData = "{\"result\": \"NG\", \"data\": \"계정정보 없음\"";
                         break;
-                    default:
-                        responseData = "{\"result\":\"ERROR\", \"data\":\"unknown type\"}";
+                    case "heartbeat":
+                        if (jsonObject.containsKey("userNumber") &&
+                                jsonObject.containsKey("sessionNumber") &&
+                                sessions.get(jsonObject.get("userNumber").toString()).equals(jsonObject.get("sessionNumber").toString())) {
+                            responseData.put("result", "OK");
+                            responseData.put("data", "heartbeat");
+                        } else {
+                            responseData.put("result", "NG");
+                            responseData.put("data", "unavailable session");
+                        }
+                        break;
+                    default: {
+                        responseData.put("result", "NG");
+                        responseData.put("data", "unknown type");
+                    }
                 }
             } catch (SQLException e) {
-                return "{\"result\":\"ERROR\", \"data\":\"DB Server error\"}";
+                responseData.put("result", "NG");
+                responseData.put("data","DB Server error");
+                return responseData.toJSONString();
             }
-            return responseData;
+            return responseData.toJSONString();
         }
     }
 }
