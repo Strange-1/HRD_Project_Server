@@ -156,6 +156,7 @@ public class Server {
                     }
                 } catch (Exception e) {
                     try {
+                        sessions.remove(userNumber);
                         connections.remove(Client.this);
                         String message = String.format("[클라이언트 통신 안됨: %s: %s]", socket.getRemoteSocketAddress(), Thread.currentThread().getName());
                         Debug.println(Server.class, message);
@@ -195,7 +196,8 @@ public class Server {
             try {
                 jsonObject = (JSONObject) new JSONParser().parse(data);
             } catch (ParseException e) {
-                responseData.put("result", "JSON syntax error");
+                responseData.put("result", "NG");
+                responseData.put("data", "JSON syntax error");
                 return responseData.toJSONString();
             }
             try {
@@ -217,10 +219,12 @@ public class Server {
                             userNumber = queryResult.getString(3);
                             responseData.put("result", "OK");
                             responseData.put("userNumber", userNumber);
-                            sessions.put(userNumber, random.nextLong());
+                            Long sessionNumber = random.nextLong();
+                            responseData.put("sessionNumber", sessionNumber);
+                            sessions.put(userNumber, sessionNumber);
                         } else {
                             responseData.put("result", "NG");
-                            responseData.put("data", "계정정보 없음");
+                            responseData.put("data", "wrong account");
                         }
                         break;
                     case "heartbeat":
@@ -233,6 +237,10 @@ public class Server {
                             responseData.put("result", "NG");
                             responseData.put("data", "unavailable session");
                         }
+                        break;
+                    case "logout":
+                        sessions.remove(userNumber);
+                        responseData.put("result", "OK");
                         break;
                     default: {
                         responseData.put("result", "NG");
