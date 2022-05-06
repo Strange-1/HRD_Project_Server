@@ -203,6 +203,7 @@ public class Server {
             }
             try {
                 switch (jsonObject.get("type").toString().toLowerCase(Locale.ROOT)) {
+                    case "reservation":
                     case "echo":
                         jsonObject.remove("type");
                         jsonObject.put("result", "OK");
