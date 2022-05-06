@@ -144,7 +144,7 @@ public class Server {
             Runnable runnable = () -> {
                 try {
                     while (true) {
-                        byte[] byteArr = new byte[100];
+                        byte[] byteArr = new byte[1024];
                         InputStream inputStream = socket.getInputStream();
                         int readByteCount = inputStream.read(byteArr);
                         if (readByteCount == -1) throw new IOException();
