@@ -152,13 +152,6 @@ public class Server {
                         Debug.println(Server.class, message);
                         String data = new String(byteArr, 0, readByteCount, StandardCharsets.UTF_8);
                         Debug.println(Server.class, "[" + (userNumber.isEmpty() ? "" : userNumber + "@") + socket.getInetAddress().toString().substring(1) + "]: " + data);
-                        long size = sqlConn.prepareStatement("select id from log").executeQuery().getFetchSize();
-                        var statement = sqlConn.prepareStatement("insert into log values (?,?,?,?)");
-                        statement.setLong(1, size + 1);
-                        statement.setString(2, socket.getInetAddress().toString());
-                        statement.setString(3, userNumber);
-                        statement.setString(4, data);
-                        statement.executeUpdate();
                         send(response(data));
                     }
                 } catch (Exception e) {
