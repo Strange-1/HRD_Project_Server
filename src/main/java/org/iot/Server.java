@@ -151,7 +151,14 @@ public class Server {
                         String message = String.format("[요청 처리: %s: %s]", socket.getRemoteSocketAddress(), Thread.currentThread().getName());
                         Debug.println(Server.class, message);
                         String data = new String(byteArr, 0, readByteCount, StandardCharsets.UTF_8);
-                        Debug.println(Server.class, "[" + (userNumber.isEmpty() ? "" : userNumber+"@") + socket.getInetAddress().toString().substring(1) + "]: " + data);
+                        Debug.println(Server.class, "[" + (userNumber.isEmpty() ? "" : userNumber + "@") + socket.getInetAddress().toString().substring(1) + "]: " + data);
+                        long size = sqlConn.prepareStatement("select id from log").executeQuery().getFetchSize();
+                        var statement = sqlConn.prepareStatement("insert into log values (?,?,?,?)");
+                        statement.setLong(1, size + 1);
+                        statement.setString(2, socket.getInetAddress().toString());
+                        statement.setString(3, userNumber);
+                        statement.setString(4, data);
+                        statement.executeUpdate();
                         send(response(data));
                     }
                 } catch (Exception e) {
@@ -203,7 +210,7 @@ public class Server {
             }
             try {
                 switch (jsonObject.get("type").toString().toLowerCase(Locale.ROOT)) {
-                    case "reservation":
+
                     case "echo":
                         jsonObject.remove("type");
                         jsonObject.put("result", "OK");
@@ -244,6 +251,13 @@ public class Server {
                         sessions.remove(userNumber);
                         responseData.put("result", "OK");
                         break;
+                    case "reservation":
+                        if (vailidate(jsonObject)) {
+                            responseData.put("result", "OK");
+                        } else {
+                            responseData.put("result", "NG");
+                        }
+                        break;
                     default: {
                         responseData.put("result", "NG");
                         responseData.put("data", "unknown type");
@@ -255,6 +269,14 @@ public class Server {
                 return responseData.toJSONString();
             }
             return responseData.toJSONString();
+        }
+
+        private boolean vailidate(JSONObject jsonObject) {
+            if (jsonObject.containsKey("userNumber") && jsonObject.containsKey("sessionNumber")) {
+                //TODO
+                return true;
+            } else
+                return false;
         }
     }
 }
