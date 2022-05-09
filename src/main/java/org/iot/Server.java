@@ -252,7 +252,7 @@ public class Server {
                             responseData.put("result", "NG");
                         }
                         break;
-                    case "parkingLotStructure":
+                    case "parkinglotstructure":
                         statement = sqlConn.prepareStatement("select * from parkinglotStructure ORDER BY position");
                         queryResult = statement.executeQuery();
                         responseData.put("result", "OK");
