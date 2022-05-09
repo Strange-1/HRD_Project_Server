@@ -260,7 +260,8 @@ public class Server {
                         while(queryResult.next())
                         {
                             JSONObject parkinglotRow = new JSONObject();
-                            parkinglotRow.put(queryResult.getString("position"), queryResult.getString("name"));
+                            parkinglotRow.put("position", queryResult.getString("position"));
+                            parkinglotRow.put("name", queryResult.getString("name"));
                             parkinglotArray.add(parkinglotRow);
                         }
                         responseData.put("data", parkinglotArray);
