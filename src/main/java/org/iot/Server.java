@@ -1,6 +1,8 @@
 package org.iot;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.sqlite.SQLiteConfig;
@@ -13,9 +15,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -194,6 +194,8 @@ public class Server {
         String response(String data) {
             JSONObject responseData = new JSONObject();
             JSONObject jsonObject;
+            PreparedStatement statement;
+            ResultSet queryResult;
             try {
                 jsonObject = (JSONObject) new JSONParser().parse(data);
             } catch (ParseException e) {
@@ -203,7 +205,6 @@ public class Server {
             }
             try {
                 switch (jsonObject.get("type").toString().toLowerCase(Locale.ROOT)) {
-
                     case "echo":
                         jsonObject.remove("type");
                         jsonObject.put("result", "OK");
@@ -214,9 +215,9 @@ public class Server {
                             responseData.put("data", "JSON syntax error");
                             return responseData.toJSONString();
                         }
-                        var statement = sqlConn.prepareStatement("select * from user where id=?;");
+                        statement = sqlConn.prepareStatement("select * from user where id=?;");
                         statement.setString(1, jsonObject.get("id").toString());
-                        var queryResult = statement.executeQuery();
+                        queryResult = statement.executeQuery();
                         if (queryResult.next() && queryResult.getString(2).equals(jsonObject.get("pw").toString())) {
                             userNumber = queryResult.getString(3);
                             responseData.put("result", "OK");
@@ -250,6 +251,19 @@ public class Server {
                         } else {
                             responseData.put("result", "NG");
                         }
+                        break;
+                    case "parkingLotStructure":
+                        statement = sqlConn.prepareStatement("select * from parkinglotStructure ORDER BY position");
+                        queryResult = statement.executeQuery();
+                        responseData.put("result", "OK");
+                        JSONArray parkinglotArray = new JSONArray();
+                        while(queryResult.next())
+                        {
+                            JSONObject parkinglotRow = new JSONObject();
+                            parkinglotRow.put(queryResult.getString("position"), queryResult.getString("name"));
+                            parkinglotArray.add(parkinglotRow);
+                        }
+                        responseData.put("data", parkinglotArray);
                         break;
                     default: {
                         responseData.put("result", "NG");
