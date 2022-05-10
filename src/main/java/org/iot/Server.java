@@ -251,9 +251,13 @@ public class Server {
                             try {
                                 statement = sqlConn.prepareStatement("select id from reservation order by id desc");
                                 queryResult = statement.executeQuery();
-                                long nextId = queryResult.getFetchSize() + 1;
+                                int nextId;
+                                if (queryResult.next())
+                                    nextId = queryResult.getInt(1);
+                                else
+                                    nextId = 1;
                                 statement = sqlConn.prepareStatement("insert into reservation values (?,?,?,?,?,?,?,?,?)");
-                                statement.setLong(1, nextId);           //id
+                                statement.setInt(1, nextId);           //id
                                 statement.setString(2, userNumber);     //userNumber
                                 statement.setInt(3, Integer.parseInt(jsonObject.get("year").toString()));            //year
                                 statement.setInt(4, Integer.parseInt(jsonObject.get("month").toString()));           //month
