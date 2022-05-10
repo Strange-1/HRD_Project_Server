@@ -249,11 +249,11 @@ public class Server {
                         if (vailidate(jsonObject)) {
                             responseData.put("result", "OK");
                             try {
-                                statement = sqlConn.prepareStatement("select id from reservation order by id desc");
+                                statement = sqlConn.prepareStatement("select * from reservation order by id desc");
                                 queryResult = statement.executeQuery();
                                 int nextId;
                                 if (queryResult.next())
-                                    nextId = queryResult.getInt(1);
+                                    nextId = queryResult.getInt("id");
                                 else
                                     nextId = 1;
                                 statement = sqlConn.prepareStatement("insert into reservation values (?,?,?,?,?,?,?,?,?)");
