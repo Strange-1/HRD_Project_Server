@@ -252,7 +252,7 @@ public class Server {
                                 statement = sqlConn.prepareStatement("select id from reservation order by id desc");
                                 queryResult = statement.executeQuery();
                                 long nextId = queryResult.getFetchSize() + 1;
-                                statement = sqlConn.prepareStatement("insert into reservation values (?,?,?,?,?,?,?,?,\"ACTIVE\")");
+                                statement = sqlConn.prepareStatement("insert into reservation values (?,?,?,?,?,?,?,?,?)");
                                 statement.setLong(1, nextId);           //id
                                 statement.setString(2, userNumber);     //userNumber
                                 statement.setInt(3, Integer.parseInt(jsonObject.get("year").toString()));          //year
@@ -261,9 +261,11 @@ public class Server {
                                 statement.setInt(6, Integer.parseInt(jsonObject.get("hour").toString()));             //hour
                                 statement.setInt(7, Integer.parseInt(jsonObject.get("minute").toString()));             //minute
                                 statement.setString(8, jsonObject.get("parkingSpot").toString());         //position
+                                statement.setString(9, "ACTIVE");
                                 Debug.println(Server.class, statement.toString());
                                 statement.executeUpdate();
                             } catch (Exception e) {
+                                e.printStackTrace();
                                 responseData.put("result", "NG");
                             }
                         } else {
