@@ -261,6 +261,7 @@ public class Server {
                                 statement.setInt(6, Integer.parseInt(jsonObject.get("hour").toString()));             //hour
                                 statement.setInt(7, Integer.parseInt(jsonObject.get("minute").toString()));             //minute
                                 statement.setString(8, jsonObject.get("parkingSpot").toString());         //position
+                                Debug.println(Server.class, statement.toString());
                                 statement.executeUpdate();
                             } catch (Exception e) {
                                 responseData.put("result", "NG");
