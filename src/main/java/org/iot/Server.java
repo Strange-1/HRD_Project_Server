@@ -253,7 +253,7 @@ public class Server {
                                 queryResult = statement.executeQuery();
                                 int nextId;
                                 if (queryResult.next()) {
-                                    nextId = queryResult.getInt("id");
+                                    nextId = queryResult.getInt("id") + 1;
                                     Debug.println(Server.class, "nextId: " + nextId);
                                 }
                                 else
