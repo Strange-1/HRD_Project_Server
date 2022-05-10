@@ -255,12 +255,12 @@ public class Server {
                                 statement = sqlConn.prepareStatement("insert into reservation values (?,?,?,?,?,?,?,?,?)");
                                 statement.setLong(1, nextId);           //id
                                 statement.setString(2, userNumber);     //userNumber
-                                statement.setInt(3, Integer.parseInt(jsonObject.get("year").toString()));          //year
-                                statement.setInt(4, Integer.parseInt(jsonObject.get("month").toString()));             //month
+                                statement.setInt(3, Integer.parseInt(jsonObject.get("year").toString()));            //year
+                                statement.setInt(4, Integer.parseInt(jsonObject.get("month").toString()));           //month
                                 statement.setInt(5, Integer.parseInt(jsonObject.get("day").toString()));             //day
-                                statement.setInt(6, Integer.parseInt(jsonObject.get("hour").toString()));             //hour
-                                statement.setInt(7, Integer.parseInt(jsonObject.get("minute").toString()));             //minute
-                                statement.setString(8, jsonObject.get("parkingSpot").toString());         //position
+                                statement.setInt(6, Integer.parseInt(jsonObject.get("hour").toString()));            //hour
+                                statement.setInt(7, 0);                                                             //minute
+                                statement.setString(8, jsonObject.get("parkingSpot").toString());                    //position
                                 statement.setString(9, "ACTIVE");
                                 Debug.println(Server.class, statement.toString());
                                 statement.executeUpdate();
