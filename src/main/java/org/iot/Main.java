@@ -1,12 +1,7 @@
 package org.iot;
 
 
-import org.sqlite.SQLiteConfig;
-import org.sqlite.SQLiteOpenMode;
-
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 
 public class Main {
     private static Connection connection;

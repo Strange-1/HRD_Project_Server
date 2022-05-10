@@ -247,7 +247,7 @@ public class Server {
                         break;
                     case "reservation":
                         if (vailidate(jsonObject)) {
-                            responseData.put("result", "OK");
+
                             try {
                                 statement = sqlConn.prepareStatement("select * from reservation order by id desc");
                                 queryResult = statement.executeQuery();
@@ -255,24 +255,35 @@ public class Server {
                                 if (queryResult.next()) {
                                     nextId = queryResult.getInt("id") + 1;
                                     Debug.println(Server.class, "nextId: " + nextId);
-                                }
-                                else
+                                } else
                                     nextId = 1;
-                                statement = sqlConn.prepareStatement("insert into reservation values (?,?,?,?,?,?,?,?,?)");
-                                statement.setInt(1, nextId);           //id
-                                statement.setString(2, userNumber);     //userNumber
-                                statement.setInt(3, Integer.parseInt(jsonObject.get("year").toString()));            //year
-                                statement.setInt(4, Integer.parseInt(jsonObject.get("month").toString()));           //month
-                                statement.setInt(5, Integer.parseInt(jsonObject.get("day").toString()));             //day
-                                statement.setInt(6, Integer.parseInt(jsonObject.get("hour").toString()));            //hour
-                                statement.setInt(7, 0);                                                             //minute
-                                statement.setString(8, jsonObject.get("parkingSpot").toString());                    //position
-                                statement.setString(9, "ACTIVE");
-                                Debug.println(Server.class, statement.toString());
-                                statement.executeUpdate();
+
+                                statement = sqlConn.prepareStatement("select * from reservation where userNumber=? and status=");
+                                statement.setString(1, userNumber);
+                                statement.setString(2, "ACTIVE");
+                                queryResult = statement.executeQuery();
+                                if (queryResult.next()) {
+                                    responseData.put("result", "NG");
+                                    responseData.put("data", "Another active reservation exists");
+                                } else {
+                                    statement = sqlConn.prepareStatement("insert into reservation values (?,?,?,?,?,?,?,?,?)");
+                                    statement.setInt(1, nextId);           //id
+                                    statement.setString(2, userNumber);     //userNumber
+                                    statement.setInt(3, Integer.parseInt(jsonObject.get("year").toString()));            //year
+                                    statement.setInt(4, Integer.parseInt(jsonObject.get("month").toString()));           //month
+                                    statement.setInt(5, Integer.parseInt(jsonObject.get("day").toString()));             //day
+                                    statement.setInt(6, Integer.parseInt(jsonObject.get("hour").toString()));            //hour
+                                    statement.setInt(7, 0);                                                             //minute
+                                    statement.setString(8, jsonObject.get("parkingSpot").toString());                    //position
+                                    statement.setString(9, "ACTIVE");
+                                    Debug.println(Server.class, statement.toString());
+                                    statement.executeUpdate();
+                                    responseData.put("result", "OK");
+                                }
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 responseData.put("result", "NG");
+                                responseData.put("data", "SQL Error");
                             }
                         } else {
                             responseData.put("result", "NG");
