@@ -248,6 +248,23 @@ public class Server {
                     case "reservation":
                         if (vailidate(jsonObject)) {
                             responseData.put("result", "OK");
+                            try {
+                                statement = sqlConn.prepareStatement("select id from reservation order by id desc");
+                                queryResult = statement.executeQuery();
+                                long nextId = queryResult.getFetchSize() + 1;
+                                statement = sqlConn.prepareStatement("insert into reservation values (?,?,?,?,?,?,?,?,\"ACTIVE\")");
+                                statement.setLong(1, nextId);           //id
+                                statement.setString(2, userNumber);     //userNumber
+                                statement.setInt(3, Integer.parseInt(jsonObject.get("year").toString()));          //year
+                                statement.setInt(4, Integer.parseInt(jsonObject.get("month").toString()));             //month
+                                statement.setInt(5, Integer.parseInt(jsonObject.get("day").toString()));             //day
+                                statement.setInt(6, Integer.parseInt(jsonObject.get("hour").toString()));             //hour
+                                statement.setInt(7, Integer.parseInt(jsonObject.get("minute").toString()));             //minute
+                                statement.setString(8, jsonObject.get("parkingSpot").toString());         //position
+                                statement.executeUpdate();
+                            } catch (Exception e) {
+                                responseData.put("result", "NG");
+                            }
                         } else {
                             responseData.put("result", "NG");
                         }
@@ -257,14 +274,16 @@ public class Server {
                         queryResult = statement.executeQuery();
                         responseData.put("result", "OK");
                         JSONArray parkinglotArray = new JSONArray();
-                        while(queryResult.next())
-                        {
+                        while (queryResult.next()) {
                             JSONObject parkinglotRow = new JSONObject();
                             parkinglotRow.put("position", queryResult.getString("position"));
                             parkinglotRow.put("name", queryResult.getString("name"));
                             parkinglotArray.add(parkinglotRow);
                         }
                         responseData.put("data", parkinglotArray);
+                        break;
+                    case "mypage":
+
                         break;
                     default: {
                         responseData.put("result", "NG");
