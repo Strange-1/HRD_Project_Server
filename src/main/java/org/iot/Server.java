@@ -252,8 +252,10 @@ public class Server {
                                 statement = sqlConn.prepareStatement("select * from reservation order by id desc");
                                 queryResult = statement.executeQuery();
                                 int nextId;
-                                if (queryResult.next())
+                                if (queryResult.next()) {
                                     nextId = queryResult.getInt("id");
+                                    Debug.println(Server.class, "nextId: " + nextId);
+                                }
                                 else
                                     nextId = 1;
                                 statement = sqlConn.prepareStatement("insert into reservation values (?,?,?,?,?,?,?,?,?)");
