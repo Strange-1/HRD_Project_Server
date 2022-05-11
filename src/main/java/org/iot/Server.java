@@ -230,17 +230,6 @@ public class Server {
                             responseData.put("data", "wrong account");
                         }
                         break;
-                    case "heartbeat":
-                        if (jsonObject.containsKey("userNumber") &&
-                                jsonObject.containsKey("sessionNumber") &&
-                                sessions.get(jsonObject.get("userNumber").toString()).equals(Long.parseLong(jsonObject.get("sessionNumber").toString()))) {
-                            responseData.put("result", "OK");
-                            responseData.put("data", "heartbeat");
-                        } else {
-                            responseData.put("result", "NG");
-                            responseData.put("data", "unavailable session");
-                        }
-                        break;
                     case "logout":
                         sessions.remove(userNumber);
                         responseData.put("result", "OK");
@@ -303,7 +292,26 @@ public class Server {
                         responseData.put("data", parkinglotArray);
                         break;
                     case "mypage":
-
+                        statement = sqlConn.prepareStatement("SELECT * FROM reservation where userNumber=? and status=? ORDER BY year ASC, month ASC, day ASC, hour ASC, minute ASC");
+                        statement.setString(1, userNumber);
+                        statement.setString(2, "ACTIVE");
+                        queryResult = statement.executeQuery();
+                        if (queryResult.next()) {
+                            responseData.put("reservationCount", 1);
+                            responseData.put("year", queryResult.getString("year"));
+                            responseData.put("month", queryResult.getString("month"));
+                            responseData.put("day", queryResult.getString("day"));
+                            responseData.put("hour", queryResult.getString("hour"));
+                            String position = queryResult.getString("position");
+                            statement = sqlConn.prepareStatement("select * from parkinglotStructure where name=?");
+                            statement.setString(1, position);
+                            queryResult = statement.executeQuery();
+                            queryResult.next();
+                            responseData.put("position", queryResult.getString("position"));
+                        } else {
+                            responseData.put("reservationCount", 0);
+                        }
+                        responseData.put("result", "OK");
                         break;
                     default: {
                         responseData.put("result", "NG");
