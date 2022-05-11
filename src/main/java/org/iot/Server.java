@@ -33,7 +33,7 @@ public class Server {
     public static boolean isServerOn = false;
     private static final String dbFileName = "iot";
 
-    //IP: 34.132.25.146
+    //IP: 34.68.12.173
     public void startServer() throws SQLException {
         random.setSeed(Instant.now().toEpochMilli());
         connectSQL();
