@@ -87,6 +87,7 @@ public class Server {
                     int month = calendar.get(Calendar.MONTH);
                     int day = calendar.get(Calendar.DAY_OF_MONTH);
                     int hour = calendar.get(Calendar.HOUR_OF_DAY);
+                    Debug.println(Server.class, String.format("NOW: %d:xx %d, %d, %d", hour, day, month, year));
                     PreparedStatement statement = null;
                     ResultSet sqlResult = null;
                     try {
