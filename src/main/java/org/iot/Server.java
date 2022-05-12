@@ -295,7 +295,7 @@ public class Server {
                                 } else
                                     nextId = 1;
 
-                                statement = sqlConn.prepareStatement("select * from reservation where userNumber=? and status=");
+                                statement = sqlConn.prepareStatement("select * from reservation where userNumber=? and status=?");
                                 statement.setString(1, userNumber);
                                 statement.setString(2, "ACTIVE");
                                 queryResult = statement.executeQuery();
