@@ -102,8 +102,7 @@ public class Server {
                             int sqlHour = Integer.parseInt(sqlResult.getString("hour"));
                             if (new Calendar.Builder().setTimeZone(TimeZone.getTimeZone("UTC+9"))
                                     .setDate(sqlYear, sqlMonth - 1, sqlDay)
-                                    .setTimeOfDay(sqlHour, 0, 0).build()
-                                    .before(calendar)) {
+                                    .setTimeOfDay(sqlHour, 0, 0).build().getTimeInMillis() - Instant.now().toEpochMilli() < 0) {
                                 listToRemove.add(sqlResult.getInt("id"));
                             }
                         }
