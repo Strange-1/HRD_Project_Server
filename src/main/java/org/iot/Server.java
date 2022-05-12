@@ -82,9 +82,9 @@ public class Server {
                         break;
                     }
                     if (!isSqlOpen) break;
-                    Calendar calendar = new Calendar.Builder().setInstant(Instant.now().toEpochMilli()).build();
+                    Calendar calendar = new Calendar.Builder().setInstant(Instant.now().toEpochMilli()).setTimeZone(TimeZone.getTimeZone("UTC+9")).build();
                     int year = calendar.get(Calendar.YEAR);
-                    int month = calendar.get(Calendar.MONTH)+1;
+                    int month = calendar.get(Calendar.MONTH) + 1;
                     int day = calendar.get(Calendar.DAY_OF_MONTH);
                     int hour = calendar.get(Calendar.HOUR_OF_DAY);
                     Debug.println(Server.class, String.format("NOW: %d %d %d %d:xx %s", year, month, day, hour, calendar.getTimeZone().getDisplayName()));
@@ -100,7 +100,10 @@ public class Server {
                             int sqlMonth = Integer.parseInt(sqlResult.getString("month"));
                             int sqlDay = Integer.parseInt(sqlResult.getString("day"));
                             int sqlHour = Integer.parseInt(sqlResult.getString("hour"));
-                            if (new Date(year, month, day, hour, 0).before(new Date(sqlYear, sqlMonth, sqlDay, sqlHour, 0))) {
+                            if (new Calendar.Builder().setTimeZone(TimeZone.getTimeZone("UTC+9"))
+                                    .setDate(sqlYear, sqlMonth - 1, sqlDay)
+                                    .setTimeOfDay(sqlHour, 0, 0).build()
+                                    .before(calendar)) {
                                 listToRemove.add(sqlResult.getInt("id"));
                             }
                         }
