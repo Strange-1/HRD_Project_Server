@@ -87,7 +87,7 @@ public class Server {
                     int month = calendar.get(Calendar.MONTH) + 1;
                     int day = calendar.get(Calendar.DAY_OF_MONTH);
                     int hour = calendar.get(Calendar.HOUR_OF_DAY);
-                    Debug.println(Server.class, "NOW: " + calendar.getTimeInMillis());
+                    Debug.println(Server.class, "NOW: " + calendar.toString());
                     PreparedStatement statement = null;
                     ResultSet sqlResult = null;
                     try {
@@ -259,6 +259,7 @@ public class Server {
             }
             try {
                 switch (jsonObject.get("type").toString().toLowerCase(Locale.ROOT)) {
+                    case "cancel":
                     case "echo":
                         jsonObject.remove("type");
                         jsonObject.put("result", "OK");
