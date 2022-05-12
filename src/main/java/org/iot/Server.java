@@ -82,12 +82,12 @@ public class Server {
                         break;
                     }
                     if (!isSqlOpen) break;
-                    Calendar calendar = new Calendar.Builder().setLocale(Locale.KOREA).setInstant(Instant.now().toEpochMilli()).build();
+                    Calendar calendar = new Calendar.Builder().setInstant(Instant.now().toEpochMilli()).build();
                     int year = calendar.get(Calendar.YEAR);
-                    int month = calendar.get(Calendar.MONTH);
+                    int month = calendar.get(Calendar.MONTH)+1;
                     int day = calendar.get(Calendar.DAY_OF_MONTH);
                     int hour = calendar.get(Calendar.HOUR_OF_DAY);
-                    Debug.println(Server.class, String.format("NOW: %d:xx %d, %d, %d", hour, day, month, year));
+                    Debug.println(Server.class, String.format("NOW: %d %d %d %d:xx %s", year, month, day, hour, calendar.getTimeZone().getDisplayName()));
                     PreparedStatement statement = null;
                     ResultSet sqlResult = null;
                     try {
