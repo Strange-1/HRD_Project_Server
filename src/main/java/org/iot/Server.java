@@ -87,7 +87,7 @@ public class Server {
                     int month = calendar.get(Calendar.MONTH) + 1;
                     int day = calendar.get(Calendar.DAY_OF_MONTH);
                     int hour = calendar.get(Calendar.HOUR_OF_DAY);
-                    Debug.println(Server.class, "NOW: " + calendar.toString());
+                    Debug.println(Server.class, String.format("NOW: %d년 %d월 %d일 %d시, %s", year, month, day, hour, calendar.getTimeZone().getDisplayName()));
                     PreparedStatement statement = null;
                     ResultSet sqlResult = null;
                     try {
