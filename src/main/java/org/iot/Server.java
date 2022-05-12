@@ -97,10 +97,10 @@ public class Server {
                         listToRemove.clear();
                         while (sqlResult.next()) {
                             int sqlYear = Integer.parseInt(sqlResult.getString("year"));
-                            int sqlMonth = Integer.parseInt(sqlResult.getString("month"))-1;
+                            int sqlMonth = Integer.parseInt(sqlResult.getString("month")) - 1;
                             int sqlDay = Integer.parseInt(sqlResult.getString("day"));
                             int sqlHour = Integer.parseInt(sqlResult.getString("hour"));
-                            long sqlDateTime =new Calendar.Builder().setTimeZone(TimeZone.getTimeZone("GMT+9"))
+                            long sqlDateTime = new Calendar.Builder().setTimeZone(TimeZone.getTimeZone("GMT+9"))
                                     .setDate(sqlYear, sqlMonth, sqlDay)
                                     .setTimeOfDay(sqlHour, 0, 0).build().getTimeInMillis();
                             Debug.println(Server.class, "SQL time: " + sqlDateTime);
@@ -259,7 +259,6 @@ public class Server {
             }
             try {
                 switch (jsonObject.get("type").toString().toLowerCase(Locale.ROOT)) {
-                    case "cancel":
                     case "echo":
                         jsonObject.remove("type");
                         jsonObject.put("result", "OK");
@@ -368,6 +367,26 @@ public class Server {
                         }
                         responseData.put("result", "OK");
                         break;
+                    case "cancel":
+                        statement = sqlConn.prepareStatement("SELECT * FROM reservation where userNumber=? and status=? ORDER BY year ASC, month ASC, day ASC, hour ASC, minute ASC");
+                        statement.setString(1, userNumber);
+                        statement.setString(2, "ACTIVE");
+                        queryResult = statement.executeQuery();
+                        if (queryResult.next()) {
+                            int id = queryResult.getInt("id");
+                            statement = sqlConn.prepareStatement("update reservation set status=? where id=?");
+                            statement.setString(1, "CANCELLED");
+                            statement.setInt(2, id);
+                            if (statement.executeUpdate() > 0)
+                                responseData.put("result", "OK");
+                            else {
+                                responseData.put("result", "NG");
+                                responseData.put("data", "SQL Error");
+                            }
+                        } else {
+                            responseData.put("result", "NG");
+                            responseData.put("data", "No reservation exists");
+                        }
                     default: {
                         responseData.put("result", "NG");
                         responseData.put("data", "unknown type");
