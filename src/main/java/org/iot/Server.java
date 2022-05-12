@@ -8,6 +8,7 @@ import org.json.simple.parser.ParseException;
 import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteOpenMode;
 
+import javax.xml.transform.Result;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -18,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.time.Instant;
 import java.util.*;
+import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
@@ -69,6 +71,50 @@ public class Server {
             }
         };
         executorService.submit(runnable);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ArrayList<Integer> listToRemove = new ArrayList<>();
+                while (true) {
+                    try {
+                        Thread.sleep(60000);
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+                    if (!isSqlOpen) break;
+                    Calendar calendar = new Calendar.Builder().setLocale(Locale.KOREA).build();
+                    int year = calendar.get(Calendar.YEAR);
+                    int month = calendar.get(Calendar.MONTH);
+                    int day = calendar.get(Calendar.DAY_OF_MONTH);
+                    int hour = calendar.get(Calendar.HOUR_OF_DAY);
+                    PreparedStatement statement = null;
+                    ResultSet sqlResult = null;
+                    try {
+                        statement = sqlConn.prepareStatement("select * from reservation where status=?");
+                        statement.setString(1, "ACTIVE");
+                        sqlResult = statement.executeQuery();
+                        listToRemove.clear();
+                        while (sqlResult.next()) {
+                            int sqlYear = Integer.parseInt(sqlResult.getString("year"));
+                            int sqlMonth = Integer.parseInt(sqlResult.getString("month"));
+                            int sqlDay = Integer.parseInt(sqlResult.getString("day"));
+                            int sqlHour = Integer.parseInt(sqlResult.getString("hour"));
+                            if (new Date(year, month, day, hour, 0).before(new Date(sqlYear, sqlMonth, sqlDay, sqlHour, 0))) {
+                                listToRemove.add(sqlResult.getInt("id"));
+                            }
+                        }
+                        for (var i : listToRemove) {
+                            statement = sqlConn.prepareStatement("update reservation set status=? where id=?");
+                            statement.setString(1, "EXPIRED");
+                            statement.setInt(2, i);
+                            statement.executeUpdate();
+                        }
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }).start();
     }
 
     private void connectSQL() {
@@ -76,6 +122,7 @@ public class Server {
             Class.forName("org.sqlite.JDBC");
             if ((sqlConn = openDB()) != null) {
                 isSqlOpen = true;
+                sqlConn.setAutoCommit(true);
                 Debug.println(Main.class, "SQLite Connection: OK");
             }
 
@@ -105,6 +152,7 @@ public class Server {
             e.printStackTrace();
             return false;
         }
+        isSqlOpen = false;
         return true;
     }
 
