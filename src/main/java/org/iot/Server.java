@@ -82,7 +82,7 @@ public class Server {
                         break;
                     }
                     if (!isSqlOpen) break;
-                    Calendar calendar = new Calendar.Builder().setInstant(Instant.now().toEpochMilli()).setTimeZone(TimeZone.getTimeZone("UTC+9")).build();
+                    Calendar calendar = new Calendar.Builder().setInstant(Instant.now().toEpochMilli()).setTimeZone(TimeZone.getTimeZone("GMT+9")).build();
                     int year = calendar.get(Calendar.YEAR);
                     int month = calendar.get(Calendar.MONTH) + 1;
                     int day = calendar.get(Calendar.DAY_OF_MONTH);
@@ -100,7 +100,7 @@ public class Server {
                             int sqlMonth = Integer.parseInt(sqlResult.getString("month"))-1;
                             int sqlDay = Integer.parseInt(sqlResult.getString("day"));
                             int sqlHour = Integer.parseInt(sqlResult.getString("hour"));
-                            long sqlDateTime =new Calendar.Builder().setTimeZone(TimeZone.getTimeZone("UTC+9"))
+                            long sqlDateTime =new Calendar.Builder().setTimeZone(TimeZone.getTimeZone("GMT+9"))
                                     .setDate(sqlYear, sqlMonth, sqlDay)
                                     .setTimeOfDay(sqlHour, 0, 0).build().getTimeInMillis();
                             Debug.println(Server.class, "SQL time: " + sqlDateTime);
