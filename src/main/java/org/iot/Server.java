@@ -87,7 +87,7 @@ public class Server {
                     int month = calendar.get(Calendar.MONTH) + 1;
                     int day = calendar.get(Calendar.DAY_OF_MONTH);
                     int hour = calendar.get(Calendar.HOUR_OF_DAY);
-                    Debug.println(Server.class, String.format("NOW: %d %d %d %d:xx %s", year, month, day, hour, calendar.getTimeZone().getDisplayName()));
+                    Debug.println(Server.class, "NOW: " + calendar.getTimeInMillis());
                     PreparedStatement statement = null;
                     ResultSet sqlResult = null;
                     try {
@@ -97,12 +97,14 @@ public class Server {
                         listToRemove.clear();
                         while (sqlResult.next()) {
                             int sqlYear = Integer.parseInt(sqlResult.getString("year"));
-                            int sqlMonth = Integer.parseInt(sqlResult.getString("month"));
+                            int sqlMonth = Integer.parseInt(sqlResult.getString("month"))-1;
                             int sqlDay = Integer.parseInt(sqlResult.getString("day"));
                             int sqlHour = Integer.parseInt(sqlResult.getString("hour"));
-                            if (new Calendar.Builder().setTimeZone(TimeZone.getTimeZone("UTC+9"))
-                                    .setDate(sqlYear, sqlMonth - 1, sqlDay)
-                                    .setTimeOfDay(sqlHour, 0, 0).build().getTimeInMillis() - Instant.now().toEpochMilli() < 0) {
+                            long sqlDateTime =new Calendar.Builder().setTimeZone(TimeZone.getTimeZone("UTC+9"))
+                                    .setDate(sqlYear, sqlMonth, sqlDay)
+                                    .setTimeOfDay(sqlHour, 0, 0).build().getTimeInMillis();
+                            Debug.println(Server.class, String.format("%T", sqlDateTime));
+                            if (sqlDateTime - Instant.now().toEpochMilli() < 0) {
                                 listToRemove.add(sqlResult.getInt("id"));
                             }
                         }
@@ -110,7 +112,8 @@ public class Server {
                             statement = sqlConn.prepareStatement("update reservation set status=? where id=?");
                             statement.setString(1, "EXPIRED");
                             statement.setInt(2, i);
-                            statement.executeUpdate();
+                            if (statement.executeUpdate() > 0)
+                                Debug.println(Server.class, "some reservation have been expired. id: " + i);
                         }
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
