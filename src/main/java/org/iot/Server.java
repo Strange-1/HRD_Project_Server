@@ -387,6 +387,7 @@ public class Server {
                             responseData.put("result", "NG");
                             responseData.put("data", "No reservation exists");
                         }
+                        break;
                     default: {
                         responseData.put("result", "NG");
                         responseData.put("data", "unknown type");
