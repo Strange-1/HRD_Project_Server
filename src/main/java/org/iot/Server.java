@@ -82,7 +82,7 @@ public class Server {
                         break;
                     }
                     if (!isSqlOpen) break;
-                    Calendar calendar = new Calendar.Builder().setLocale(Locale.KOREA).build();
+                    Calendar calendar = new Calendar.Builder().setLocale(Locale.KOREA).setInstant(Instant.now().toEpochMilli()).build();
                     int year = calendar.get(Calendar.YEAR);
                     int month = calendar.get(Calendar.MONTH);
                     int day = calendar.get(Calendar.DAY_OF_MONTH);
