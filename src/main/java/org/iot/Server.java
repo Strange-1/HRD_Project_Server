@@ -312,10 +312,10 @@ public class Server {
                                     statement = sqlConn.prepareStatement("insert into reservation values (?,?,?,?,?,?,?,?,?)");
                                     statement.setInt(1, nextId);           //id
                                     statement.setString(2, userNumber);     //userNumber
-                                    statement.setInt(3, Integer.parseInt(jsonObject.get("year").toString()));            //year
-                                    statement.setInt(4, Integer.parseInt(jsonObject.get("month").toString()));           //month
-                                    statement.setInt(5, Integer.parseInt(jsonObject.get("day").toString()));             //day
-                                    statement.setInt(6, Integer.parseInt(jsonObject.get("hour").toString()));            //hour
+                                    statement.setInt(3, (int)jsonObject.get("year"));            //year
+                                    statement.setInt(4, (int)jsonObject.get("month"));           //month
+                                    statement.setInt(5, (int)jsonObject.get("day"));             //day
+                                    statement.setInt(6, (int)jsonObject.get("hour"));            //hour
                                     statement.setInt(7, 0);                                                             //minute
                                     statement.setString(8, jsonObject.get("parkingSpot").toString());                    //position
                                     statement.setString(9, "ACTIVE");
@@ -352,15 +352,10 @@ public class Server {
                         queryResult = statement.executeQuery();
                         if (queryResult.next()) {
                             responseData.put("reservationCount", 1);
-                            responseData.put("year", queryResult.getString("year"));
-                            responseData.put("month", queryResult.getString("month"));
-                            responseData.put("day", queryResult.getString("day"));
-                            responseData.put("hour", queryResult.getString("hour"));
-                            String position = queryResult.getString("position");
-                            statement = sqlConn.prepareStatement("select * from parkinglotStructure where name=?");
-                            statement.setString(1, position);
-                            queryResult = statement.executeQuery();
-                            queryResult.next();
+                            responseData.put("year", queryResult.getInt("year"));
+                            responseData.put("month", queryResult.getInt("month"));
+                            responseData.put("day", queryResult.getInt("day"));
+                            responseData.put("hour", queryResult.getInt("hour"));
                             responseData.put("position", queryResult.getString("position"));
                         } else {
                             responseData.put("reservationCount", 0);
