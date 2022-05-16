@@ -312,10 +312,10 @@ public class Server {
                                     statement = sqlConn.prepareStatement("insert into reservation values (?,?,?,?,?,?,?,?,?)");
                                     statement.setInt(1, nextId);           //id
                                     statement.setString(2, userNumber);     //userNumber
-                                    statement.setInt(3, (int)jsonObject.get("year"));            //year
-                                    statement.setInt(4, (int)jsonObject.get("month"));           //month
-                                    statement.setInt(5, (int)jsonObject.get("day"));             //day
-                                    statement.setInt(6, (int)jsonObject.get("hour"));            //hour
+                                    statement.setInt(3, Math.toIntExact((long) jsonObject.get("year")));            //year
+                                    statement.setInt(4, Math.toIntExact((long) jsonObject.get("month")));           //month
+                                    statement.setInt(5, Math.toIntExact((long) jsonObject.get("day")));             //day
+                                    statement.setInt(6, Math.toIntExact((long) jsonObject.get("hour")));            //hour
                                     statement.setInt(7, 0);                                                             //minute
                                     statement.setString(8, jsonObject.get("parkingSpot").toString());                    //position
                                     statement.setString(9, "ACTIVE");
