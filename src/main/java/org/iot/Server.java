@@ -346,9 +346,10 @@ public class Server {
                         responseData.put("data", parkinglotArray);
                         break;
                     case "mypage":
-                        statement = sqlConn.prepareStatement("SELECT * FROM reservation where userNumber=? and status=? ORDER BY year ASC, month ASC, day ASC, hour ASC, minute ASC");
+                        statement = sqlConn.prepareStatement("SELECT * FROM reservation where userNumber=? and (status=? or status=?) ORDER BY year ASC, month ASC, day ASC, hour ASC, minute ASC");
                         statement.setString(1, userNumber);
                         statement.setString(2, "ACTIVE");
+                        statement.setString(3, "USING");
                         queryResult = statement.executeQuery();
                         if (queryResult.next()) {
                             responseData.put("reservationCount", 1);
@@ -357,6 +358,7 @@ public class Server {
                             responseData.put("day", queryResult.getInt("day"));
                             responseData.put("hour", queryResult.getInt("hour"));
                             responseData.put("position", queryResult.getString("position"));
+                            responseData.put("status", queryResult.getString("status"));
                         } else {
                             responseData.put("reservationCount", 0);
                         }
