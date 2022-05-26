@@ -83,11 +83,11 @@ public class Server {
                     }
                     if (!isSqlOpen) break;
                     Calendar calendar = new Calendar.Builder().setInstant(Instant.now().toEpochMilli()).setTimeZone(TimeZone.getTimeZone("GMT+9")).build();
-                    int year = calendar.get(Calendar.YEAR);
+                    /*int year = calendar.get(Calendar.YEAR);
                     int month = calendar.get(Calendar.MONTH) + 1;
                     int day = calendar.get(Calendar.DAY_OF_MONTH);
                     int hour = calendar.get(Calendar.HOUR_OF_DAY);
-                    Debug.println(Server.class, String.format("NOW: %d년 %d월 %d일 %d시, %s", year, month, day, hour, calendar.getTimeZone().getDisplayName()));
+                    Debug.println(Server.class, String.format("NOW: %d년 %d월 %d일 %d시, %s", year, month, day, hour, calendar.getTimeZone().getDisplayName()));*/
                     PreparedStatement statement = null;
                     ResultSet sqlResult = null;
                     try {
@@ -103,7 +103,7 @@ public class Server {
                             long sqlDateTime = new Calendar.Builder().setTimeZone(TimeZone.getTimeZone("GMT+9"))
                                     .setDate(sqlYear, sqlMonth, sqlDay)
                                     .setTimeOfDay(sqlHour, 0, 0).build().getTimeInMillis();
-                            Debug.println(Server.class, "SQL time: " + sqlDateTime);
+                            //Debug.println(Server.class, "SQL time: " + sqlDateTime);
                             if (sqlDateTime - Instant.now().toEpochMilli() < 0) {
                                 listToRemove.add(sqlResult.getInt("id"));
                             }
@@ -288,48 +288,49 @@ public class Server {
                         sessions.remove(userNumber);
                         responseData.put("result", "OK");
                         break;
-                    case "reservation":
-                        if (vailidate(jsonObject)) {
-
-                            try {
-                                statement = sqlConn.prepareStatement("select * from reservation order by id desc");
-                                queryResult = statement.executeQuery();
-                                int nextId;
-                                if (queryResult.next()) {
-                                    nextId = queryResult.getInt("id") + 1;
-                                    Debug.println(Server.class, "nextId: " + nextId);
-                                } else
-                                    nextId = 1;
-
-                                statement = sqlConn.prepareStatement("select * from reservation where userNumber=? and status=?");
-                                statement.setString(1, userNumber);
-                                statement.setString(2, "ACTIVE");
-                                queryResult = statement.executeQuery();
-                                if (queryResult.next()) {
-                                    responseData.put("result", "NG");
-                                    responseData.put("data", "Another active reservation exists");
-                                } else {
-                                    statement = sqlConn.prepareStatement("insert into reservation values (?,?,?,?,?,?,?,?,?)");
-                                    statement.setInt(1, nextId);           //id
-                                    statement.setString(2, userNumber);     //userNumber
-                                    statement.setInt(3, Math.toIntExact((long) jsonObject.get("year")));            //year
-                                    statement.setInt(4, Math.toIntExact((long) jsonObject.get("month")));           //month
-                                    statement.setInt(5, Math.toIntExact((long) jsonObject.get("day")));             //day
-                                    statement.setInt(6, Math.toIntExact((long) jsonObject.get("hour")));            //hour
-                                    statement.setInt(7, 0);                                                             //minute
-                                    statement.setString(8, jsonObject.get("parkingSpot").toString());                    //position
-                                    statement.setString(9, "ACTIVE");
-                                    Debug.println(Server.class, statement.toString());
-                                    statement.executeUpdate();
-                                    responseData.put("result", "OK");
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                responseData.put("result", "NG");
-                                responseData.put("data", "SQL Error");
-                            }
-                        } else {
+                    case "validate":
+                        if (vailidate(jsonObject))
+                            responseData.put("result", "OK");
+                        else
                             responseData.put("result", "NG");
+                        break;
+                    case "reservation":
+                        try {
+                            statement = sqlConn.prepareStatement("select * from reservation order by id desc");
+                            queryResult = statement.executeQuery();
+                            int nextId;
+                            if (queryResult.next()) {
+                                nextId = queryResult.getInt("id") + 1;
+                                Debug.println(Server.class, "nextId: " + nextId);
+                            } else
+                                nextId = 1;
+
+                            statement = sqlConn.prepareStatement("select * from reservation where userNumber=? and status=?");
+                            statement.setString(1, userNumber);
+                            statement.setString(2, "ACTIVE");
+                            queryResult = statement.executeQuery();
+                            if (queryResult.next()) {
+                                responseData.put("result", "NG");
+                                responseData.put("data", "Another active reservation exists");
+                            } else {
+                                statement = sqlConn.prepareStatement("insert into reservation values (?,?,?,?,?,?,?,?,?)");
+                                statement.setInt(1, nextId);           //id
+                                statement.setString(2, userNumber);     //userNumber
+                                statement.setInt(3, Math.toIntExact((long) jsonObject.get("year")));            //year
+                                statement.setInt(4, Math.toIntExact((long) jsonObject.get("month")));           //month
+                                statement.setInt(5, Math.toIntExact((long) jsonObject.get("day")));             //day
+                                statement.setInt(6, Math.toIntExact((long) jsonObject.get("hour")));            //hour
+                                statement.setInt(7, 0);                                                             //minute
+                                statement.setString(8, jsonObject.get("parkingSpot").toString());                    //position
+                                statement.setString(9, "ACTIVE");
+                                Debug.println(Server.class, statement.toString());
+                                statement.executeUpdate();
+                                responseData.put("result", "OK");
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            responseData.put("result", "NG");
+                            responseData.put("data", "SQL Error");
                         }
                         break;
                     case "parkinglotstructure":
@@ -400,7 +401,11 @@ public class Server {
 
         private boolean vailidate(JSONObject jsonObject) {
             if (jsonObject.containsKey("userNumber") && jsonObject.containsKey("sessionNumber")) {
-                //TODO
+                if (sessions.containsKey(userNumber))
+                {
+                    if (sessions.get(userNumber).equals(jsonObject.get("sessionNumber").toString()))
+                        return true;
+                }
                 return true;
             } else
                 return false;
